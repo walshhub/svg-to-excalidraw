@@ -1,6 +1,6 @@
 {
   "name": "@walshhub/svg-to-excalidraw",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Convert SVG to Excalidraw’s file format",
   "main": "dist/bundle.js",
   "files": [
