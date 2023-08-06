@@ -331,6 +331,9 @@ const walkers = {
     const x = getNum(el, "x", 0);
     const y = getNum(el, "y", 0);
 
+    const hasFill = has(el, "fill");
+    const fill = get(el, "fill");
+
     const mat = getTransformMatrix(el, groups);
 
     const m = mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, 0, 1);
@@ -340,15 +343,19 @@ const walkers = {
     const textContent = el.textContent || "";
     const fontSize = getNum(el, "font-size", 16);
 
-    // Note: You might want to map other SVG text properties to Excalidraw text properties here
-
     const text: ExcalidrawText = {
       ...createExText(),
       ...presAttrs(el, groups),
       x: result[12],
       y: result[13],
+      originalText: textContent,
+      fillStyle: 'hachure',
       text: textContent,
-      fontSize: fontSize || 16
+      strokeColor: hasFill ? fill : "#1E1E1E",
+      backgroundColor: 'transparent',
+      width: 40,
+      height: 40,
+      fontSize: fontSize || 20
       // fontFamily
     };
 
@@ -404,7 +411,7 @@ const walkers = {
 
     const points = pointsOnPath(get(el, "d"));
 
-    const fillColor = get(el, "fill", "black");
+    const fillColor = get(el, "fill", "transparent");
     const fillRule = get(el, "fill-rule", "nonzero");
 
     let elements: ExcalidrawDraw[] = [];
@@ -432,6 +439,9 @@ const walkers = {
           }
 
           let backgroundColor = fillColor;
+          if (backgroundColor === "none") {
+            backgroundColor = "transparent";
+          }
           if (initialWindingOrder !== windingOrder) {
             backgroundColor = "#FFFFFF";
           }

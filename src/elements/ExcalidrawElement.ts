@@ -64,6 +64,8 @@ export type ExcalidrawText = ExcalidrawElementBase & {
   baseline: number;
   containerId: ExcalidrawGenericElement["id"] | null;
   originalText: string;
+  fontFamily: number | string;
+  lineHeight: number;
 }
 
 
@@ -85,7 +87,7 @@ export function createExElement(): ExcalidrawElementBase {
     x: 0,
     y: 0,
     strokeColor: "#000000",
-    backgroundColor: "#000000",
+    backgroundColor: "transparent",
     fillStyle: "solid",
     strokeWidth: 1,
     strokeStyle: "solid",
@@ -138,8 +140,10 @@ export function createExText(): ExcalidrawText {
   return {
     ...createExElement(),
     type: "text",
-    fontSize: 16,
+    fontSize: 20,
     text: "",
+    fontFamily: 1,
+    lineHeight: 1.5,
     baseline: 0,
     containerId: null,
     originalText: "",
