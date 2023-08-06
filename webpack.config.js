@@ -17,7 +17,7 @@ const babelLoaderConfig = {
 const baseConfig = {
   entry: [path.join(process.cwd(), "src/index.ts")],
   mode: "production",
-  devtool: "eval-source-map",
+  devtool: "source-map",
   resolve: {
     alias: { ...aliases },
     extensions: [".js", ".mjs", ".ts", ".tsx"],
