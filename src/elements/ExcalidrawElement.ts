@@ -56,11 +56,23 @@ export type ExcalidrawEllipse = ExcalidrawElementBase & {
   type: "ellipse";
 };
 
+export type ExcalidrawText = ExcalidrawElementBase & {
+  type: "text";
+  fontSize: number;
+ // fontFamily: FontFamilyValues;
+  text: string;
+  baseline: number;
+  containerId: ExcalidrawGenericElement["id"] | null;
+  originalText: string;
+}
+
+
 export type ExcalidrawGenericElement =
   | ExcalidrawRectangle
   | ExcalidrawEllipse
   | ExcalidrawLine
-  | ExcalidrawDraw;
+  | ExcalidrawDraw
+  | ExcalidrawText;
 
 export type ExcalidrawDraw = ExcalidrawElementBase & {
   type: "draw";
@@ -119,5 +131,17 @@ export function createExDraw(): ExcalidrawDraw {
     ...createExElement(),
     type: "draw",
     points: [],
+  };
+}
+
+export function createExText(): ExcalidrawText {
+  return {
+    ...createExElement(),
+    type: "text",
+    fontSize: 16,
+    text: "",
+    baseline: 0,
+    containerId: null,
+    originalText: "",
   };
 }

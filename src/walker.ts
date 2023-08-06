@@ -8,10 +8,12 @@ import {
   ExcalidrawEllipse,
   ExcalidrawLine,
   ExcalidrawDraw,
+  ExcalidrawText,
   createExRect,
   createExEllipse,
   createExLine,
   createExDraw,
+  createExText,
   Point,
 } from "./elements/ExcalidrawElement";
 import {
@@ -30,6 +32,7 @@ const SUPPORTED_TAGS = [
   "svg",
   "path",
   "g",
+  "text",
   "use",
   "circle",
   "ellipse",
@@ -320,6 +323,40 @@ const walkers = {
 
     walk(args, args.tw.nextNode());
   },
+
+  text: (args: WalkerArgs) => {
+    const { tw, scene, groups } = args;
+    const el = tw.currentNode as Element;
+
+    const x = getNum(el, "x", 0);
+    const y = getNum(el, "y", 0);
+
+    const mat = getTransformMatrix(el, groups);
+
+    const m = mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, 0, 1);
+
+    const result = mat4.multiply(mat4.create(), mat, m);
+
+    const textContent = el.textContent || "";
+    const fontSize = getNum(el, "font-size", 16);
+
+    // Note: You might want to map other SVG text properties to Excalidraw text properties here
+
+    const text: ExcalidrawText = {
+      ...createExText(),
+      ...presAttrs(el, groups),
+      x: result[12],
+      y: result[13],
+      text: textContent,
+      fontSize: fontSize || 16
+      // fontFamily
+    };
+
+    scene.elements.push(text);
+
+    walk(args, args.tw.nextNode());
+  },
+
 
   rect: (args: WalkerArgs) => {
     const { tw, scene, groups } = args;
