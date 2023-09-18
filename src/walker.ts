@@ -341,22 +341,23 @@ const walkers = {
     const result = mat4.multiply(mat4.create(), mat, m);
 
     const textContent = el.textContent || "";
-    const fontSize = getNum(el, "font-size", 16);
+    const fontSize = getNum(el, "font-size", 10);
 
     const text: ExcalidrawText = {
       ...createExText(),
       ...presAttrs(el, groups),
       x: result[12],
-      y: result[13],
+      y: result[13] - (fontSize || 10),
       originalText: textContent,
       fillStyle: 'hachure',
       text: textContent,
       strokeColor: hasFill ? fill : "#1E1E1E",
       backgroundColor: 'transparent',
       width: 40,
-      height: 40,
-      fontSize: fontSize || 20
-      // fontFamily
+      lineHeight: 1.5,
+      height: 15,
+      fontSize: fontSize || 10,
+      fontFamily: 2
     };
 
     scene.elements.push(text);
