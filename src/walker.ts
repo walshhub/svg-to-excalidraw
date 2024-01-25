@@ -325,46 +325,109 @@ const walkers = {
   },
 
   text: (args: WalkerArgs) => {
-    const { tw, scene, groups } = args;
+    const { tw, scene, groups, root } = args;
     const el = tw.currentNode as Element;
 
+    // Adjust height reflects the fact that the text is drawn from the bottom
+    // and so needs to be adjusted by fontSize to line up with expectation.
+    // When this SVG is parsed from Excalidraw, this adjustment has already 
+    // been assumed to take place.
+    const adjustHeight = !root.documentElement.innerHTML.includes("excalidraw");
+
+    const fontSize = getNum(el, "font-size", 10);
     const x = getNum(el, "x", 0);
     const y = getNum(el, "y", 0);
-
     const hasFill = has(el, "fill");
     const fill = get(el, "fill");
-
     const mat = getTransformMatrix(el, groups);
-
     const m = mat4.fromValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, 0, 1);
-
     const result = mat4.multiply(mat4.create(), mat, m);
 
-    const textContent = el.textContent || "";
-    const fontSize = getNum(el, "font-size", 10);
+    for (let i = 0; i < el.childNodes.length; i++) {
+      const child = el.childNodes[i];
+      // If TEXT_NODE, create a text element.
+      if (child.nodeType === Node.TEXT_NODE) {
+        const textContent = child.textContent || "";
 
-    const text: ExcalidrawText = {
-      ...createExText(),
-      ...presAttrs(el, groups),
-      x: result[12],
-      y: result[13] - (fontSize || 10),
-      originalText: textContent,
-      fillStyle: "hachure",
-      text: textContent,
-      strokeColor: hasFill ? fill : "#1E1E1E",
-      backgroundColor: "transparent",
-      width: 8 * textContent.length,
-      lineHeight: 1.5,
-      height: 15,
-      fontSize: fontSize || 10,
-      fontFamily: 2
-    };
+        const text: ExcalidrawText = {
+          ...createExText(),
+          ...presAttrs(el, groups),
+          x: result[12],
+          y: adjustHeight ? result[13] - (fontSize || 10) : result[13],
+          originalText: textContent,
+          fillStyle: "hachure",
+          text: textContent,
+          strokeColor: hasFill ? fill : "#1E1E1E",
+          backgroundColor: "transparent",
+          width: 8 * textContent.length,
+          lineHeight: 1.5,
+          height: 15,
+          fontSize: fontSize || 10,
+          fontFamily: 2
+        };
 
-    scene.elements.push(text);
+        scene.elements.push(text);
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        const childEl = child as Element;
+        // If tspan (ELEMENT_NODE), create a text element for each tspan
+        if (childEl.tagName === "tspan") {
+          const textContent = childEl.textContent || "";
+
+          // Inherit from parent if not set on child
+          const childFontSize = has(childEl, "font-size")
+            ? getNum(childEl, "font-size", 10)
+            : fontSize;
+          const hasChildFill = has(childEl, "fill")
+          const childFill = has(childEl, "fill") ? get(childEl, "fill") : fill
+          const childX = has(childEl, "x") ? getNum(childEl, "x", 0) : x
+          const childY = has(childEl, "y") ? getNum(childEl, "y", 0) : y
+
+          const updatedM = mat4.fromValues(
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0,
+            childX,
+            childY,
+            0,
+            1,
+          );
+          const updatedResult = mat4.multiply(mat4.create(), mat, updatedM)
+
+          const text: ExcalidrawText = {
+            ...createExText(),
+            ...presAttrs(el, groups),
+            x: updatedResult[12],
+            y: adjustHeight
+              ? updatedResult[13] - (fontSize || 10)
+              : updatedResult[13],
+            originalText: textContent,
+            fillStyle: "hachure",
+            text: textContent,
+            strokeColor: hasFill || hasChildFill ? childFill : "#1E1E1E",
+            backgroundColor: "transparent",
+            width: 8 * textContent.length,
+            lineHeight: 1.5,
+            height: 15,
+            fontSize: childFontSize || 10,
+            fontFamily: 2
+          };
+
+          scene.elements.push(text);
+        }
+      }
+    }
 
     walk(args, args.tw.nextNode());
   },
-
 
   rect: (args: WalkerArgs) => {
     const { tw, scene, groups } = args;
