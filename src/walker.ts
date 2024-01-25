@@ -330,11 +330,32 @@ const walkers = {
 
     // Adjust height reflects the fact that the text is drawn from the bottom
     // and so needs to be adjusted by fontSize to line up with expectation.
-    // When this SVG is parsed from Excalidraw, this adjustment has already 
+    // When this SVG is parsed from Excalidraw, this adjustment has already
     // been assumed to take place.
     const adjustHeight = !root.documentElement.innerHTML.includes("excalidraw");
 
-    const fontSize = getNum(el, "font-size", 10);
+    // Create initial variables to be set by class, style, or default
+    let fontSize = 10;
+
+    // Set values via class
+    const styleElm = root.querySelector("style");
+    const styleRules = styleElm?.sheet?.cssRules;
+    const className = el.getAttribute("class");
+    if (className && styleRules) {
+      const rule = Array.from(styleRules).find(
+        (r) =>
+          (r as CSSStyleRule).selectorText === `.${className}` ||
+          (r as CSSStyleRule).selectorText === `.${className} tspan` ||
+          (r as CSSStyleRule).selectorText === `text.${className}` ||
+          (r as CSSStyleRule).selectorText === `text.${className} tspan`,
+      );
+
+      fontSize = rule
+        ? parseFloat((rule as CSSStyleRule).style.fontSize)
+        : fontSize;
+    }
+
+    fontSize = getNum(el, "font-size", fontSize);
     const x = getNum(el, "x", 0);
     const y = getNum(el, "y", 0);
     const hasFill = has(el, "fill");
@@ -363,7 +384,7 @@ const walkers = {
           lineHeight: 1.5,
           height: 15,
           fontSize: fontSize || 10,
-          fontFamily: 2
+          fontFamily: 2,
         };
 
         scene.elements.push(text);
@@ -377,10 +398,10 @@ const walkers = {
           const childFontSize = has(childEl, "font-size")
             ? getNum(childEl, "font-size", 10)
             : fontSize;
-          const hasChildFill = has(childEl, "fill")
-          const childFill = has(childEl, "fill") ? get(childEl, "fill") : fill
-          const childX = has(childEl, "x") ? getNum(childEl, "x", 0) : x
-          const childY = has(childEl, "y") ? getNum(childEl, "y", 0) : y
+          const hasChildFill = has(childEl, "fill");
+          const childFill = has(childEl, "fill") ? get(childEl, "fill") : fill;
+          const childX = has(childEl, "x") ? getNum(childEl, "x", 0) : x;
+          const childY = has(childEl, "y") ? getNum(childEl, "y", 0) : y;
 
           const updatedM = mat4.fromValues(
             1,
@@ -400,7 +421,7 @@ const walkers = {
             0,
             1,
           );
-          const updatedResult = mat4.multiply(mat4.create(), mat, updatedM)
+          const updatedResult = mat4.multiply(mat4.create(), mat, updatedM);
 
           const text: ExcalidrawText = {
             ...createExText(),
@@ -418,7 +439,7 @@ const walkers = {
             lineHeight: 1.5,
             height: 15,
             fontSize: childFontSize || 10,
-            fontFamily: 2
+            fontFamily: 2,
           };
 
           scene.elements.push(text);
